@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "process-killer"
-version = "1.0.0"
+version = "1.0.1"
 description = "macOS memory leak detector and killer with Docker support"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -97,7 +97,7 @@ ignore_missing_imports = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "1.0.0"
+version = "1.0.1"
 version_files = [
     "_version.py:__version__",
     "pyproject.toml:version"
