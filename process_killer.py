@@ -653,7 +653,7 @@ def monitor(args: argparse.Namespace) -> None:
     dyn_params = DynamicParams.from_args(args)
 
     mode = "hunting" if hasattr(args, "hunting_mode") and args.hunting_mode else "protection"
-    log(f"Process Killer v{__version__} - Monitoring started in {mode} mode with params: slope={args.slope}MB/min, growth={args.growth}MB, interval={args.interval}s")
+    log(f"Process Killer v{__version__} - Started in {mode} mode (slope={args.slope}MB/min, growth={args.growth}MB, interval={args.interval}s)")
     if not hasattr(args, "hunting_mode") or not args.hunting_mode:
         leak_threshold = getattr(args, "leak_threshold", DEF_LEAK_THRESHOLD_PCT)
         log(f"Protection mode: will only kill leaks when RAM ≥ {leak_threshold}%")
