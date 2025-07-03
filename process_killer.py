@@ -530,7 +530,7 @@ def kill_docker_container(
             notify(
                 "Docker Container Memory Leak",
                 f"Container {container_name} killed {len(Recidivism[key])}× "
-                f"in {args.notify_window//60} minutes",
+                f"in {args.notify_window // 60} minutes",
             )
             Recidivism[key].clear()
     except Exception as e:
@@ -588,7 +588,7 @@ def kill_process(
         body = (
             f"{name} (parent: {parent_name}) was killed "
             f"{len(Recidivism[key])}× in the last "
-            f"{args.notify_window//60} minutes."
+            f"{args.notify_window // 60} minutes."
         )
         notify(title, body)
         # prevent notification spam by clearing records
@@ -768,7 +768,7 @@ def monitor(args: argparse.Namespace) -> None:
                             rss_mb = rss / 1024 / 1024
                             log(
                                 f"Leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): "
-                                f"PID {pid} ({name}) rss={rss_mb:.1f}MB slope≈{dyn_params.current_slope*60/1024/1024:.1f}MB/min"
+                                f"PID {pid} ({name}) rss={rss_mb:.1f}MB slope≈{dyn_params.current_slope * 60 / 1024 / 1024:.1f}MB/min"
                             )
                 else:
                     if trk.suspect_runs:
@@ -814,7 +814,7 @@ def monitor_docker_containers(
                     else:
                         log(
                             f"Docker container leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): "
-                            f"{container_name} ({container_id}) memory={memory_bytes/1024/1024:.1f}MB"
+                            f"{container_name} ({container_id}) memory={memory_bytes / 1024 / 1024:.1f}MB"
                         )
             else:
                 if trk.suspect_runs:
@@ -987,8 +987,7 @@ EXAMPLES:
         "--grace",
         type=int,
         default=DEF_GRACE_SEC,
-        help=f"Seconds to ignore new processes (initialization period). "
-        f"(default: {DEF_GRACE_SEC})",
+        help=f"Seconds to ignore new processes (initialization period). (default: {DEF_GRACE_SEC})",
     )
     p.add_argument(
         "--cool",
@@ -1024,7 +1023,7 @@ EXAMPLES:
         "--child-wt",
         type=float,
         default=DEF_CHILD_WEIGHT,
-        help=f"Suspicion score multiplier per child process. " f"(default: {DEF_CHILD_WEIGHT})",
+        help=f"Suspicion score multiplier per child process. (default: {DEF_CHILD_WEIGHT})",
     )
 
     # Notification & scope
@@ -1101,7 +1100,7 @@ def main() -> None:
                 )
         except FileNotFoundError:
             sys.exit(
-                "Error: Docker command not found. " "Please install Docker to use --docker option."
+                "Error: Docker command not found. Please install Docker to use --docker option."
             )
 
     # Validate arguments
