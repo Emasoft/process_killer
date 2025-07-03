@@ -60,6 +60,7 @@ sudo ./memory_leak_killer.py --docker --slope 15 --growth 30
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import os
 import platform
@@ -173,9 +174,10 @@ class SystemInfo:
     def detect(cls) -> SystemInfo:
         """Detect current system configuration."""
         vm = psutil.virtual_memory()
+        cpu_count = psutil.cpu_count(logical=True)
         return cls(
             total_ram_gb=vm.total / (1024**3),
-            cpu_count=psutil.cpu_count(logical=True),
+            cpu_count=cpu_count if cpu_count is not None else 1,
             macos_version=platform.mac_ver()[0],
         )
 
@@ -351,10 +353,10 @@ def should_kill_leak(args: argparse.Namespace) -> bool:
     # In protection mode, only kill if memory is high
     vm = psutil.virtual_memory()
     leak_threshold = getattr(args, "leak_threshold", DEF_LEAK_THRESHOLD_PCT)
-    return vm.percent >= leak_threshold
+    return bool(vm.percent >= leak_threshold)
 
 
-def handle_critical_leak(proc: psutil.Process, args: argparse.Namespace) -> None:
+def handle_critical_leak(proc: psutil.Process, args: argparse.Namespace) -> None:  # noqa: ARG001
     """Handle a critical leak that threatens system stability."""
     try:
         name = proc.name()
@@ -380,10 +382,8 @@ def notify(title: str, message: str) -> None:
     Runs best when invoked as root from launchd (no extra privileges needed).
     """
     script = f'display notification "{esc(message)}" with title "{esc(title)}"'
-    try:
+    with contextlib.suppress(subprocess.TimeoutExpired):
         subprocess.run(["osascript", "-e", script], check=False, timeout=5)
-    except subprocess.TimeoutExpired:
-        pass  # Notification timed out, continue
 
 
 def window_stats(hist: deque[tuple[float, int]]) -> tuple[float, int]:
@@ -405,7 +405,7 @@ def window_stats(hist: deque[tuple[float, int]]) -> tuple[float, int]:
 
 
 def is_leaking(
-    trk: ProcTracker, slope_limit_bps: float, growth_limit_b: int, pos_ratio: float = 0.8
+    trk: ProcTracker, slope_limit_bps: float, growth_limit_b: float, pos_ratio: float = 0.8
 ) -> bool:
     """Return True if the rss history matches our definition of a leak."""
     if not trk.full:
@@ -596,7 +596,7 @@ def kill_process(
 
 
 # ─────────────────────  Memory-pressure relief routine  ─────────────────────
-def pressure_relief(args: argparse.Namespace, slope_limit_bps: float) -> None:
+def pressure_relief(args: argparse.Namespace, slope_limit_bps: float) -> None:  # noqa: ARG001
     vm = psutil.virtual_memory()
     if vm.percent < args.high:
         return
@@ -658,7 +658,7 @@ def pressure_relief(args: argparse.Namespace, slope_limit_bps: float) -> None:
 
                 candidates.append((score, (container_id, stats["name"]), slope_mb_min, "container"))
 
-    for score, target, slope_mb_min, target_type in sorted(
+    for _score, target, slope_mb_min, target_type in sorted(
         candidates, key=lambda c: c[0], reverse=True
     ):
         if target_type == "process":
@@ -776,10 +776,7 @@ def monitor(args: argparse.Namespace) -> None:
                     trk.reset()
 
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                try:
-                    ProcessTable.pop(proc.pid, None)
-                except KeyError:
-                    pass  # Already removed
+                ProcessTable.pop(proc.pid, None)
 
         pressure_relief(args, dyn_params.current_slope)
         time.sleep(args.interval)
@@ -1116,9 +1113,8 @@ def main() -> None:
         sys.exit("Error: --history must be at least 2 samples")
     if args.slope < 0 or args.growth < 0:
         sys.exit("Error: --slope and --growth must be non-negative")
-    if hasattr(args, "leak_threshold"):
-        if args.leak_threshold < 0 or args.leak_threshold > 100:
-            sys.exit("Error: --leak-threshold must be between 0 and 100")
+    if hasattr(args, "leak_threshold") and (args.leak_threshold < 0 or args.leak_threshold > 100):
+        sys.exit("Error: --leak-threshold must be between 0 and 100")
 
     # propagate history length to existing trackers
     for trk in ProcessTable.values():
