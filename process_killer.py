@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-memory_leak_killer.py
-=====================
+Process Killer - Memory Leak Detector and Killer for macOS
+==========================================================
 
 A macOS watchdog that
 
