@@ -207,9 +207,7 @@ class SystemInfo:
         if self.cpu_count <= 4:
             args.interval = max(args.interval, 6)  # Less frequent monitoring
 
-        log(
-            f"System: {self.total_ram_gb:.1f}GB RAM, {self.cpu_count} CPUs, macOS {self.macos_version}"
-        )
+        log(f"System: {self.total_ram_gb:.1f}GB RAM, {self.cpu_count} CPUs, macOS {self.macos_version}")
         log(f"Optimized params: slope={args.slope}, growth={args.growth}, interval={args.interval}")
 
 
@@ -266,16 +264,12 @@ class DynamicParams:
         self.current_confirmations = max(1, int(self.base_confirmations * self.pressure_factor))
 
         if self.pressure_factor < 1.0:
-            log(
-                f"Adjusted params for {vm_percent:.1f}% RAM: slope factor={self.pressure_factor:.2f}"
-            )
+            log(f"Adjusted params for {vm_percent:.1f}% RAM: slope factor={self.pressure_factor:.2f}")
 
 
 @dataclass
 class ProcTracker:
-    rss_hist: deque[tuple[float, int]] = field(
-        default_factory=lambda: deque(maxlen=DEF_HISTORY_LEN)
-    )
+    rss_hist: deque[tuple[float, int]] = field(default_factory=lambda: deque(maxlen=DEF_HISTORY_LEN))
     suspect_runs: int = 0
     exempt_until: float = 0.0
     growth_rate: float = 0.0  # Track growth rate for predictive killing
@@ -366,8 +360,7 @@ def handle_critical_leak(proc: psutil.Process, args: argparse.Namespace) -> None
         # Send urgent notification
         notify(
             "CRITICAL Memory Leak!",
-            f"{name} (PID {pid}) using {rss_mb:.0f}MB and growing rapidly. "
-            f"Killed to prevent system crash.",
+            f"{name} (PID {pid}) using {rss_mb:.0f}MB and growing rapidly. Killed to prevent system crash.",
         )
 
         # Log critical event
@@ -404,21 +397,13 @@ def window_stats(hist: deque[tuple[float, int]]) -> tuple[float, int]:
     return slope, ys[-1] - ys[0]
 
 
-def is_leaking(
-    trk: ProcTracker, slope_limit_bps: float, growth_limit_b: float, pos_ratio: float = 0.8
-) -> bool:
+def is_leaking(trk: ProcTracker, slope_limit_bps: float, growth_limit_b: float, pos_ratio: float = 0.8) -> bool:
     """Return True if the rss history matches our definition of a leak."""
     if not trk.full:
         return False
     slope, growth = window_stats(trk.rss_hist)
-    nondecr = sum(
-        1 for i in range(1, len(trk.rss_hist)) if trk.rss_hist[i][1] >= trk.rss_hist[i - 1][1]
-    )
-    return (
-        nondecr / (len(trk.rss_hist) - 1) >= pos_ratio
-        and slope > slope_limit_bps
-        and growth > growth_limit_b
-    )
+    nondecr = sum(1 for i in range(1, len(trk.rss_hist)) if trk.rss_hist[i][1] >= trk.rss_hist[i - 1][1])
+    return nondecr / (len(trk.rss_hist) - 1) >= pos_ratio and slope > slope_limit_bps and growth > growth_limit_b
 
 
 def is_descendant_of_iterm(proc: psutil.Process) -> bool:
@@ -508,9 +493,7 @@ def parse_memory_string(mem_str: str) -> int:
     return int(value * multipliers.get(unit, 1))
 
 
-def kill_docker_container(
-    container_id: str, container_name: str, reason: str, args: argparse.Namespace
-) -> None:
+def kill_docker_container(container_id: str, container_name: str, reason: str, args: argparse.Namespace) -> None:
     """Kill a Docker container."""
     try:
         # First try to stop gracefully
@@ -529,8 +512,7 @@ def kill_docker_container(
         if len(Recidivism[key]) >= args.notify_threshold:
             notify(
                 "Docker Container Memory Leak",
-                f"Container {container_name} killed {len(Recidivism[key])}× "
-                f"in {args.notify_window // 60} minutes",
+                f"Container {container_name} killed {len(Recidivism[key])}× in {args.notify_window // 60} minutes",
             )
             Recidivism[key].clear()
     except Exception as e:
@@ -538,9 +520,7 @@ def kill_docker_container(
 
 
 # ───────────────────────────── Kill wrapper  ────────────────────────────────
-def kill_process(
-    proc: psutil.Process, reason: str, slope_mb_min: float, args: argparse.Namespace
-) -> None:
+def kill_process(proc: psutil.Process, reason: str, slope_mb_min: float, args: argparse.Namespace) -> None:
     """
     Wrapper that:
       • kills the process,
@@ -570,10 +550,7 @@ def kill_process(
     except (psutil.NoSuchProcess, psutil.AccessDenied, OSError):
         return
 
-    msg = (
-        f"Killed PID {pid} ({name}) parent={parent_name} "
-        f"rss={rss_mb:.1f} MB, slope≈{slope_mb_min:.1f} MB/min, reason={reason}"
-    )
+    msg = f"Killed PID {pid} ({name}) parent={parent_name} rss={rss_mb:.1f} MB, slope≈{slope_mb_min:.1f} MB/min, reason={reason}"
     print(f"[{reason.upper()}] {msg}")
     log(msg)
 
@@ -585,11 +562,7 @@ def kill_process(
     Recidivism[key] = [t for t in Recidivism[key] if now - t <= args.notify_window]
     if len(Recidivism[key]) >= args.notify_threshold:
         title = "Memory Leak Killer"
-        body = (
-            f"{name} (parent: {parent_name}) was killed "
-            f"{len(Recidivism[key])}× in the last "
-            f"{args.notify_window // 60} minutes."
-        )
+        body = f"{name} (parent: {parent_name}) was killed {len(Recidivism[key])}× in the last {args.notify_window // 60} minutes."
         notify(title, body)
         # prevent notification spam by clearing records
         Recidivism[key].clear()
@@ -632,13 +605,7 @@ def pressure_relief(args: argparse.Namespace, slope_limit_bps: float) -> None:  
                 continue
             rss_mb = memory_info.rss / 1024 / 1024
 
-            score = (
-                (trk.suspect_runs if trk else 0) * 20
-                + slope_mb_min * 2
-                + max(0, (args.recent - age) / args.recent) * 10
-                + child_cnt * args.child_wt
-                + rss_mb / 100
-            )
+            score = (trk.suspect_runs if trk else 0) * 20 + slope_mb_min * 2 + max(0, (args.recent - age) / args.recent) * 10 + child_cnt * args.child_wt + rss_mb / 100
 
             candidates.append((score, proc, slope_mb_min, "process"))
         except (psutil.NoSuchProcess, psutil.AccessDenied):
@@ -658,9 +625,7 @@ def pressure_relief(args: argparse.Namespace, slope_limit_bps: float) -> None:  
 
                 candidates.append((score, (container_id, stats["name"]), slope_mb_min, "container"))
 
-    for _score, target, slope_mb_min, target_type in sorted(
-        candidates, key=lambda c: c[0], reverse=True
-    ):
+    for _score, target, slope_mb_min, target_type in sorted(candidates, key=lambda c: c[0], reverse=True):
         if target_type == "process":
             kill_process(target, "pressure", slope_mb_min, args)
         else:  # container
@@ -688,10 +653,7 @@ def monitor(args: argparse.Namespace) -> None:
     dyn_params = DynamicParams.from_args(args)
 
     mode = "hunting" if hasattr(args, "hunting_mode") and args.hunting_mode else "protection"
-    log(
-        f"Process Killer v{__version__} - Monitoring started in {mode} mode with params: slope={args.slope}MB/min, "
-        f"growth={args.growth}MB, interval={args.interval}s"
-    )
+    log(f"Process Killer v{__version__} - Monitoring started in {mode} mode with params: slope={args.slope}MB/min, growth={args.growth}MB, interval={args.interval}s")
     if not hasattr(args, "hunting_mode") or not args.hunting_mode:
         leak_threshold = getattr(args, "leak_threshold", DEF_LEAK_THRESHOLD_PCT)
         log(f"Protection mode: will only kill leaks when RAM ≥ {leak_threshold}%")
@@ -714,11 +676,7 @@ def monitor(args: argparse.Namespace) -> None:
                 name = proc.info["name"] or ""
                 if name in WHITELIST:
                     continue
-                if (
-                    hasattr(args, "iterm_only")
-                    and args.iterm_only
-                    and not is_descendant_of_iterm(proc)
-                ):
+                if hasattr(args, "iterm_only") and args.iterm_only and not is_descendant_of_iterm(proc):
                     continue
 
                 pid = proc.pid
@@ -766,10 +724,7 @@ def monitor(args: argparse.Namespace) -> None:
                         else:
                             # Log that we detected but didn't kill
                             rss_mb = rss / 1024 / 1024
-                            log(
-                                f"Leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): "
-                                f"PID {pid} ({name}) rss={rss_mb:.1f}MB slope≈{dyn_params.current_slope * 60 / 1024 / 1024:.1f}MB/min"
-                            )
+                            log(f"Leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): PID {pid} ({name}) rss={rss_mb:.1f}MB slope≈{dyn_params.current_slope * 60 / 1024 / 1024:.1f}MB/min")
                 else:
                     if trk.suspect_runs:
                         trk.exempt_until = now + args.cool
@@ -782,9 +737,7 @@ def monitor(args: argparse.Namespace) -> None:
         time.sleep(args.interval)
 
 
-def monitor_docker_containers(
-    args: argparse.Namespace, dyn_params: DynamicParams, sys_info: SystemInfo
-) -> None:
+def monitor_docker_containers(args: argparse.Namespace, dyn_params: DynamicParams, sys_info: SystemInfo) -> None:
     """Monitor Docker containers for memory leaks."""
     container_stats = get_docker_container_stats()
 
@@ -812,10 +765,7 @@ def monitor_docker_containers(
                         kill_docker_container(container_id, container_name, "leak", args)
                         DockerContainers.pop(container_id, None)
                     else:
-                        log(
-                            f"Docker container leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): "
-                            f"{container_name} ({container_id}) memory={memory_bytes / 1024 / 1024:.1f}MB"
-                        )
+                        log(f"Docker container leak detected but not killed (protection mode, RAM {vm.percent:.1f}%): {container_name} ({container_id}) memory={memory_bytes / 1024 / 1024:.1f}MB")
             else:
                 if trk.suspect_runs:
                     trk.exempt_until = time.time() + args.cool
@@ -940,9 +890,7 @@ EXAMPLES:
     p.add_argument("--version", action="version", version=f"Process Killer v{__version__}")
 
     mg = p.add_mutually_exclusive_group()
-    mg.add_argument(
-        "--install-daemon", action="store_true", help="Install as LaunchDaemon (runs at boot)"
-    )
+    mg.add_argument("--install-daemon", action="store_true", help="Install as LaunchDaemon (runs at boot)")
     mg.add_argument("--uninstall-daemon", action="store_true", help="Remove the LaunchDaemon")
     mg.add_argument("--start", action="store_true", help="Start the daemon")
     mg.add_argument("--stop", action="store_true", help="Stop the daemon")
@@ -952,36 +900,31 @@ EXAMPLES:
         "--interval",
         type=int,
         default=DEF_SAMPLE_INT,
-        help=f"Sampling interval in seconds. Lower = more responsive but higher CPU. "
-        f"Auto-adjusted based on system specs. (default: {DEF_SAMPLE_INT})",
+        help=f"Sampling interval in seconds. Lower = more responsive but higher CPU. Auto-adjusted based on system specs. (default: {DEF_SAMPLE_INT})",
     )
     p.add_argument(
         "--history",
         type=int,
         default=DEF_HISTORY_LEN,
-        help=f"Number of samples in regression window. More = smoother detection but slower response. "
-        f"(default: {DEF_HISTORY_LEN})",
+        help=f"Number of samples in regression window. More = smoother detection but slower response. (default: {DEF_HISTORY_LEN})",
     )
     p.add_argument(
         "--growth",
         type=int,
         default=DEF_GROW_MB,
-        help=f"Minimum net memory growth (MB) within window to consider a leak. "
-        f"Auto-adjusted for system RAM. (default: {DEF_GROW_MB})",
+        help=f"Minimum net memory growth (MB) within window to consider a leak. Auto-adjusted for system RAM. (default: {DEF_GROW_MB})",
     )
     p.add_argument(
         "--slope",
         type=int,
         default=DEF_SLOPE_MB_MIN,
-        help=f"Minimum growth rate (MB/min) to consider a leak. Lower = catch slow leaks. "
-        f"Auto-adjusted under pressure. (default: {DEF_SLOPE_MB_MIN})",
+        help=f"Minimum growth rate (MB/min) to consider a leak. Lower = catch slow leaks. Auto-adjusted under pressure. (default: {DEF_SLOPE_MB_MIN})",
     )
     p.add_argument(
         "--conf",
         type=int,
         default=DEF_CONFIRMATIONS,
-        help=f"Consecutive bad windows needed before killing. Higher = fewer false positives. "
-        f"Auto-reduced under pressure. (default: {DEF_CONFIRMATIONS})",
+        help=f"Consecutive bad windows needed before killing. Higher = fewer false positives. Auto-reduced under pressure. (default: {DEF_CONFIRMATIONS})",
     )
     p.add_argument(
         "--grace",
@@ -993,8 +936,7 @@ EXAMPLES:
         "--cool",
         type=int,
         default=DEF_COOLDOWN_SEC,
-        help=f"Cooldown seconds after a process plateaus (stops growing). "
-        f"(default: {DEF_COOLDOWN_SEC})",
+        help=f"Cooldown seconds after a process plateaus (stops growing). (default: {DEF_COOLDOWN_SEC})",
     )
 
     # Pressure-relief knobs
@@ -1002,22 +944,19 @@ EXAMPLES:
         "--high",
         type=int,
         default=DEF_HIGH_PCT,
-        help=f"RAM percentage to trigger emergency pressure relief. "
-        f"Auto-adjusted for small systems. (default: {DEF_HIGH_PCT})",
+        help=f"RAM percentage to trigger emergency pressure relief. Auto-adjusted for small systems. (default: {DEF_HIGH_PCT})",
     )
     p.add_argument(
         "--low",
         type=int,
         default=DEF_LOW_PCT,
-        help=f"RAM percentage to stop pressure relief (hysteresis). "
-        f"Must be < --high. (default: {DEF_LOW_PCT})",
+        help=f"RAM percentage to stop pressure relief (hysteresis). Must be < --high. (default: {DEF_LOW_PCT})",
     )
     p.add_argument(
         "--recent",
         type=int,
         default=DEF_RECENT_SEC,
-        help=f"Seconds to consider a process 'young' (more suspicious). "
-        f"(default: {DEF_RECENT_SEC})",
+        help=f"Seconds to consider a process 'young' (more suspicious). (default: {DEF_RECENT_SEC})",
     )
     p.add_argument(
         "--child-wt",
@@ -1031,27 +970,23 @@ EXAMPLES:
         "--notify-threshold",
         type=int,
         default=DEF_NOTIFY_THRESHOLD,
-        help=f"Number of kills of same process before user notification. "
-        f"(default: {DEF_NOTIFY_THRESHOLD})",
+        help=f"Number of kills of same process before user notification. (default: {DEF_NOTIFY_THRESHOLD})",
     )
     p.add_argument(
         "--notify-window",
         type=int,
         default=DEF_NOTIFY_WINDOW_SEC,
-        help=f"Time window (seconds) for counting repeated kills. "
-        f"(default: {DEF_NOTIFY_WINDOW_SEC})",
+        help=f"Time window (seconds) for counting repeated kills. (default: {DEF_NOTIFY_WINDOW_SEC})",
     )
     p.add_argument(
         "--iterm-only",
         action="store_true",
-        help="Only monitor processes spawned from iTerm2. Useful for safely "
-        "testing in development without affecting system processes.",
+        help="Only monitor processes spawned from iTerm2. Useful for safely testing in development without affecting system processes.",
     )
     p.add_argument(
         "--docker",
         action="store_true",
-        help="Enable Docker container monitoring. Tracks and kills containers "
-        "with memory leaks. Requires Docker CLI to be installed.",
+        help="Enable Docker container monitoring. Tracks and kills containers with memory leaks. Requires Docker CLI to be installed.",
     )
 
     # Operation modes
@@ -1071,8 +1006,7 @@ EXAMPLES:
         "--leak-threshold",
         type=int,
         default=DEF_LEAK_THRESHOLD_PCT,
-        help=f"Minimum RAM percentage to start killing leaks in protection mode. "
-        f"Ignored in hunting mode. (default: {DEF_LEAK_THRESHOLD_PCT})",
+        help=f"Minimum RAM percentage to start killing leaks in protection mode. Ignored in hunting mode. (default: {DEF_LEAK_THRESHOLD_PCT})",
     )
 
     return p
@@ -1090,18 +1024,11 @@ def main() -> None:
     # Check Docker availability if --docker is specified
     if hasattr(args, "docker") and args.docker:
         try:
-            result = subprocess.run(
-                ["docker", "--version"], capture_output=True, check=False, timeout=5
-            )
+            result = subprocess.run(["docker", "--version"], capture_output=True, check=False, timeout=5)
             if result.returncode != 0:
-                sys.exit(
-                    "Error: Docker is not installed or not in PATH. "
-                    "Please install Docker to use --docker option."
-                )
+                sys.exit("Error: Docker is not installed or not in PATH. Please install Docker to use --docker option.")
         except FileNotFoundError:
-            sys.exit(
-                "Error: Docker command not found. Please install Docker to use --docker option."
-            )
+            sys.exit("Error: Docker command not found. Please install Docker to use --docker option.")
 
     # Validate arguments
     if args.high <= args.low:

@@ -32,7 +32,6 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black>=24.10.0",
     "ruff>=0.8.6",
     "mypy>=1.14.1",
     "types-psutil",
@@ -52,7 +51,7 @@ Changelog = "https://github.com/Emasoft/process_killer/blob/main/CHANGELOG.md"
 
 [tool.ruff]
 target-version = "py310"
-line-length = 100
+line-length = 320
 fix = true
 
 [tool.ruff.lint]
@@ -79,9 +78,6 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["process_killer"]
 
-[tool.black]
-line-length = 100
-target-version = ['py310', 'py311', 'py312']
 
 [tool.mypy]
 python_version = "3.10"
