@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install commitizen
+          uv pip install --system commitizen
 
       - name: Configure git
         run: |
@@ -73,8 +73,8 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          uv run cz bump --${{ steps.bump_type.outputs.bump }} --yes
-          echo "version=$(uv run cz version -p)" >> $GITHUB_OUTPUT
+          cz bump --${{ steps.bump_type.outputs.bump }} --yes
+          echo "version=$(cz version -p)" >> $GITHUB_OUTPUT
 
       - name: Push changes
         run: |
