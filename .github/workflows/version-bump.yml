@@ -1,0 +1,95 @@
+name: Version Bump
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - '_version.py'
+      - 'pyproject.toml'
+      - '.github/workflows/version-bump.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    if: "!contains(github.event.head_commit.message, 'bump:')"
+    runs-on: ubuntu-latest
+    name: Bump version and create changelog
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: '0.5.11'
+
+      - name: Install dependencies
+        run: |
+          uv pip install commitizen
+
+      - name: Configure git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Determine version bump type
+        id: bump_type
+        run: |
+          # Get all commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" --no-merges)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s" --no-merges)
+          fi
+
+          # Check for breaking changes
+          if echo "$COMMITS" | grep -qiE "^(breaking|break|BREAKING CHANGE|BREAKING):"; then
+            echo "bump=major" >> $GITHUB_OUTPUT
+            echo "Detected breaking change"
+          # Check for features (non-breaking changes)
+          elif echo "$COMMITS" | grep -qE "^feat(\(.+\))?:"; then
+            echo "bump=minor" >> $GITHUB_OUTPUT
+            echo "Detected feature"
+          # Everything else is a patch
+          else
+            echo "bump=patch" >> $GITHUB_OUTPUT
+            echo "Detected patch"
+          fi
+
+      - name: Bump version
+        id: bump
+        run: |
+          uv run cz bump --${{ steps.bump_type.outputs.bump }} --yes
+          echo "version=$(uv run cz version -p)" >> $GITHUB_OUTPUT
+
+      - name: Push changes
+        run: |
+          git push
+          git push --tags
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the changelog for this version
+          VERSION="${{ steps.bump.outputs.version }}"
+          CHANGELOG=$(sed -n "/## v${VERSION}/,/## v[0-9]/p" CHANGELOG.md | sed '$d' || echo "See CHANGELOG.md for details")
+
+          gh release create "v${VERSION}" \
+            --title "Process Killer v${VERSION}" \
+            --notes "${CHANGELOG}" \
+            --target main

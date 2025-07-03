@@ -118,7 +118,9 @@ Before submitting, ensure:
 
 ### Commit Messages
 
-Follow conventional commits:
+**IMPORTANT**: This project uses conventional commits for automatic semantic versioning.
+
+Follow conventional commits format:
 
 ```
 type(scope): description
@@ -128,15 +130,40 @@ type(scope): description
 [optional footer]
 ```
 
-Types:
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes
-- `refactor`: Code refactoring
-- `perf`: Performance improvements
-- `test`: Test additions/changes
-- `chore`: Maintenance tasks
+Types and their version impact:
+- `BREAKING CHANGE:`, `breaking:`, `break:`, `BREAKING:` → Major version bump (X.0.0)
+- `feat:` → Minor version bump (0.X.0)
+- `fix:` → Patch version bump (0.0.X)
+- `perf:` → Patch version bump
+- `refactor:` → Patch version bump
+- `style:` → Patch version bump
+- `docs:` → Patch version bump
+- `test:` → Patch version bump
+- `build:` → Patch version bump
+- `ci:` → Patch version bump
+- `chore:` → Patch version bump
+
+Examples:
+```bash
+# Breaking change (1.0.0 → 2.0.0)
+git commit -m "breaking: remove deprecated --legacy flag"
+
+# New feature (1.0.0 → 1.1.0)
+git commit -m "feat: add support for Linux memory monitoring"
+
+# Bug fix (1.0.0 → 1.0.1)
+git commit -m "fix: correct memory calculation on M1 Macs"
+
+# With scope
+git commit -m "feat(docker): add container memory limit detection"
+```
+
+The CI/CD pipeline will automatically:
+1. Validate your commit message format
+2. Bump the version number accordingly
+3. Update CHANGELOG.md
+4. Create a new git tag
+5. Create a GitHub release
 
 ### Documentation
 

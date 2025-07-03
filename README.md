@@ -352,16 +352,44 @@ Run Process Killer in another terminal:
 sudo process-killer --iterm-only --hunting-mode
 ```
 
+## Versioning
+
+This project uses [Semantic Versioning](https://semver.org/) with automatic version bumping based on commit messages:
+
+- **MAJOR** version (X.0.0): Breaking changes
+  - Commits with `BREAKING CHANGE:`, `breaking:`, `break:`, or `BREAKING:` prefix
+- **MINOR** version (0.X.0): New features (backwards compatible)
+  - Commits with `feat:` prefix
+- **PATCH** version (0.0.X): Bug fixes and minor changes
+  - Commits with `fix:`, `perf:`, `refactor:`, `style:`, `docs:`, `test:`, `build:`, `ci:`, or `chore:` prefix
+
+### Commit Message Format
+
+Use conventional commits format:
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+Examples:
+- `feat: add memory threshold configuration`
+- `fix: correct Docker container detection`
+- `breaking: change CLI argument structure`
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Key points:
 - Fork and create feature branches
+- Use conventional commit messages for automatic versioning
 - Run pre-commit hooks
 - Add tests for new features
 - Update documentation
-- Follow Python code style (Black, Ruff)
+- Follow Python code style (Ruff with line-length=320)
 
 ## License
 

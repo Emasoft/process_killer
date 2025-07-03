@@ -1,20 +1,13 @@
 # Changelog
 
-All notable changes to Process Killer will be documented in this file.
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## v1.0.0 (2025-07-03)
 
-### Security
-- Comprehensive security scanning with TruffleHog v3
-- Pre-commit hooks for secret detection
-- CI/CD pipeline with security checks
-
-## [1.0.0] - 2024-01-07
-
-### Added
+### Features
 - Initial release with core functionality
 - Memory leak detection using linear regression analysis
 - Two operation modes: Protection (default) and Hunting
@@ -27,15 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - LaunchDaemon support for automatic startup
 - Comprehensive logging system
 - Extensive process whitelist for system safety
-
-### Features
-- Protection Mode: Only kills when RAM ≥ 85% (configurable)
-- Hunting Mode: Aggressively kills all detected leaks
-- Configurable detection parameters (slope, growth, history)
-- Grace period for new processes
-- Cooldown after processes plateau
-- Memory pressure relief with intelligent scoring
-- Recidivism tracking and notifications
 
 ### Technical
 - Python 3.10+ support
@@ -56,7 +40,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alpha software - not production ready
 - Requires root/sudo access
 - macOS only (optimized for Sonoma 14.x)
-
----
-
-**Note**: This is the first public release. The software is in ALPHA stage and should be used with caution.

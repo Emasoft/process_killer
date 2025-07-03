@@ -37,6 +37,7 @@ dev = [
     "types-psutil",
     "pre-commit>=4.2.0",
     "safety>=3.2.0",
+    "commitizen>=3.29.0",
 ]
 
 [project.scripts]
@@ -93,3 +94,20 @@ warn_unused_ignores = true
 warn_no_return = true
 follow_imports = "normal"
 ignore_missing_imports = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "1.0.0"
+version_files = [
+    "_version.py:__version__",
+    "pyproject.toml:version"
+]
+tag_format = "v$version"
+update_changelog_on_bump = true
+major_version_zero = true
+bump_message = "bump: version $current_version → $new_version"
+annotated_tag = true
+
+[tool.commitizen.customize]
+bump_pattern = "^(BREAKING CHANGE|breaking|break|BREAKING)"
+bump_map = {"BREAKING CHANGE" = "MAJOR", "breaking" = "MAJOR", "break" = "MAJOR", "BREAKING" = "MAJOR", "feat" = "MINOR", "fix" = "PATCH", "perf" = "PATCH", "refactor" = "PATCH", "style" = "PATCH", "docs" = "PATCH", "test" = "PATCH", "build" = "PATCH", "ci" = "PATCH", "chore" = "PATCH"}

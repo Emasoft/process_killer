@@ -2,6 +2,13 @@
 # See https://pre-commit.com for more information
 
 repos:
+  # Commitizen - Conventional commit message validation
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.29.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
   # TruffleHog v3 - Security scanning for secrets
   - repo: https://github.com/trufflesecurity/trufflehog
     rev: v3.88.0  # Update to latest version
