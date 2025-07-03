@@ -656,7 +656,7 @@ def monitor(args: argparse.Namespace) -> None:
     log(f"Process Killer v{__version__} - Started in {mode} mode (slope={args.slope}MB/min, growth={args.growth}MB, interval={args.interval}s)")
     if not hasattr(args, "hunting_mode") or not args.hunting_mode:
         leak_threshold = getattr(args, "leak_threshold", DEF_LEAK_THRESHOLD_PCT)
-        log(f"Protection mode: will only kill leaks when RAM ≥ {leak_threshold}%")
+        log(f"Protection mode enabled: will only kill leaks when RAM ≥ {leak_threshold}%")
     if hasattr(args, "docker") and args.docker:
         log("Docker container monitoring enabled")
 
