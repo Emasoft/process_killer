@@ -73,7 +73,7 @@ jobs:
       - name: Bump version
         id: bump
         run: |
-          cz bump --${{ steps.bump_type.outputs.bump }} --yes
+          cz bump --increment ${{ steps.bump_type.outputs.bump }} --yes
           echo "version=$(cz version -p)" >> $GITHUB_OUTPUT
 
       - name: Push changes
