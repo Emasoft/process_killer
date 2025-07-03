@@ -1,0 +1,11 @@
+# Memory Leak Killer - Python Dependencies
+#
+# This file lists all Python packages required to run process_killer.py
+# Install with: pip install -r requirements.txt
+#
+# Python 3.8+ required (for walrus operator, typed dicts, and modern typing)
+
+# Process and system utilities library
+# psutil provides cross-platform access to process and system information
+# Version 5.9.0+ required for macOS compatibility and memory_info() support
+psutil>=5.9.0,<6.0.0

@@ -1,0 +1,23 @@
+# TruffleHog v3 Configuration
+# This file configures TruffleHog to ignore known non-secret patterns
+
+# Use only verified detectors to reduce false positives
+only-verified: true
+
+# Filter out high entropy strings that are not secrets
+filter-entropy: true
+
+# Exclude specific paths from scanning
+exclude-paths:
+  - .git
+  - __pycache__
+  - "*.pyc"
+  - dist/
+  - build/
+  - "*.egg-info"
+  - .pytest_cache
+  - .mypy_cache
+  - .ruff_cache
+  - uv.lock
+  - .venv
+  - venv/

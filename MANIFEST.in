@@ -1,0 +1,37 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include SECURITY.md
+include CONTRIBUTING.md
+include requirements.txt
+include .python-version
+include pyproject.toml
+include _version.py
+
+# Exclude development files
+exclude .pre-commit-config.yaml
+exclude .trufflehog.yaml
+exclude .trufflehog-allowlist.txt
+exclude CLAUDE.md
+exclude INSTALL.md
+
+# Exclude version control
+prune .git
+prune .github
+
+# Exclude build artifacts
+prune dist
+prune build
+prune *.egg-info
+prune __pycache__
+
+# Exclude development environments
+prune .venv
+prune venv
+prune .uv
+
+# Exclude IDE files
+exclude .DS_Store
+exclude .gitignore
+prune .vscode
+prune .idea
