@@ -104,7 +104,6 @@ version_files = [
 ]
 tag_format = "v$version"
 update_changelog_on_bump = true
-major_version_zero = true
 bump_message = "bump: version $current_version → $new_version"
 annotated_tag = true
 
