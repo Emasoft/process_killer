@@ -354,7 +354,7 @@ sudo process-killer --iterm-only --hunting-mode
 
 ## Versioning
 
-This project uses [Semantic Versioning](https://semver.org/) with automatic version bumping based on commit messages:
+This project uses [Semantic Versioning](https://semver.org/) with automatic version bumping based on conventional commit messages:
 
 - **MAJOR** version (X.0.0): Breaking changes
   - Commits with `BREAKING CHANGE:`, `breaking:`, `break:`, or `BREAKING:` prefix
